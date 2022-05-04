@@ -1,0 +1,67 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%;
+}
+
+body {
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 1.6rem;
+    font-family: Arial, Helvetica, sans-serif;
+
+    background-color: #ADADAD;
+}
+
+/* MUSIC PLAYER CONTAINER */
+.music-player-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 1.0rem 0.5rem;
+}
+
+.music-player-container > .album-cover {
+    width: 50%;
+    
+    border-radius: 4px;
+    margin-bottom: 1.9rem;
+}
+
+.music-name {
+    font-weight: bold;
+    margin-bottom: 1.0rem;
+}
+
+.artist-name {
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 1.4rem;
+    margin-bottom: 3.4rem;
+}
+
+/* CONTROLS */
+.controls {
+    display: flex;
+    gap: 2.7rem;
+}
+
+.controls > img {
+    width: 2.0rem;
+
+    transition: all 80ms ease;
+}
+
+.controls > img:active {
+    transform: scale(0.8);
+}
