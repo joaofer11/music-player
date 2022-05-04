@@ -1,0 +1,16 @@
+{
+  "name": "new-music-player",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/joaofer11/music-player.git",
+  "author": "João Fernandes <joaofergear003@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev:mode": "webpack -w --mode development",
+    "build": "webpack --mode production"
+  },
+  "devDependencies": {
+    "webpack": "^5.72.0",
+    "webpack-cli": "^4.9.2"
+  }
+}
