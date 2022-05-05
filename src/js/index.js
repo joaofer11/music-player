@@ -2,12 +2,17 @@ import { musics } from './music_data'
 import PlayIcon from 'assets/images/play_icon.png'
 import PauseIcon from 'assets/images/pause_icon.png'
 
-const audio = document.querySelector('[data-js="audio"]')
 const controls = document.querySelector('[data-js="controls"]')
+const progress = document.querySelector('[data-js="progress"]')
+const audio = document.querySelector('[data-js="audio"]')
+
+//console.log(progress)
 
 
 let musicData = musics[0]
 let itsPlaying = false
+let progressIsClicked = false
+
 audio.setAttribute('src', musicData.musicPath)
 
 const setTrackDetails = () => {
@@ -29,7 +34,6 @@ const switchMusicTrack = track => {
 }
 
 const playMusic = playButton => {
-    
     if (playButton) {
         playButton.setAttribute('src', PauseIcon)
         playButton.setAttribute('data-button', 'pause')
@@ -98,18 +102,47 @@ const handleControlButtonsClick = (event) => {
     if (allowedButton) checkButton(clickedButton, domElement)
 }
 
+const dragProgress = event => {
+        if (progressIsClicked) {
+            const { duration } = audio
+            const { offsetWidth } = event.target
+            const { offsetX } = event
+            
+            
+            const clickedXPosition = (duration / offsetWidth) * offsetX
+
+            audio.currentTime = clickedXPosition
+            progress.onmouseup = () => progressIsClicked = false
+        }
+        
+    }
+
+const setProgress = event => {
+    const { duration } = audio
+    const { offsetWidth } = event.target
+    const { offsetX } = event
+
+    const clickedXPosition = (duration / offsetWidth) * offsetX
+
+    audio.currentTime = clickedXPosition
+    progressIsClicked = true
+    
+}
+
 const updateProgressBar = event => {
     const progressBar = document.querySelector('[data-js="progress-bar"]')
-    
-    const musicDuration = event.target.duration
-    const musicCurrentTime = event.target.currentTime
+    const { duration, currentTime } = event.target
 
-    const musicCurrentTimePercent = (musicCurrentTime / musicDuration) * 100
+    const musicCurrentTimePercent = (currentTime / duration) * 100
 
-    console.log(musicCurrentTimePercent)
     progressBar.style.width = `${musicCurrentTimePercent}%`
 }
 
 controls.addEventListener('click', handleControlButtonsClick)
+progress.addEventListener('mousedown', setProgress)
+progress.addEventListener('mousemove', dragProgress)
+
 audio.addEventListener('timeupdate', updateProgressBar)
+
+
 setTrackDetails()
