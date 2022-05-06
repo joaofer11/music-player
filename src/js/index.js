@@ -2,18 +2,18 @@ import { musics } from './music_data'
 import PlayIcon from 'assets/images/play_icon.png'
 import PauseIcon from 'assets/images/pause_icon.png'
 
-const controls = document.querySelector('[data-js="controls"]')
-const progress = document.querySelector('[data-js="progress"]')
-const audio = document.querySelector('[data-js="audio"]')
 
-//console.log(progress)
+const controls = document.querySelector('[data-js="controls"]')
+const audio = document.querySelector('[data-js="audio"]')
+const progressContainer = document.querySelector('[data-js="progress-container"]')
+const progressRange = document.querySelector('[data-js="progress-range"]')
 
 
 let musicData = musics[0]
 let itsPlaying = false
 let progressIsClicked = false
-
 audio.setAttribute('src', musicData.musicPath)
+
 
 const setTrackDetails = () => {
     const { musicName, artistName } = musicData
@@ -102,32 +102,57 @@ const handleControlButtonsClick = (event) => {
     if (allowedButton) checkButton(clickedButton, domElement)
 }
 
-const dragProgress = event => {
-        if (progressIsClicked) {
-            const { duration } = audio
-            const { offsetWidth } = event.target
-            const { offsetX } = event
-            
-            
-            const clickedXPosition = (duration / offsetWidth) * offsetX
-
-            audio.currentTime = clickedXPosition
-            progress.onmouseup = () => progressIsClicked = false
-        }
-        
-    }
-
-const setProgress = event => {
+const disableProgressBarDragging = xAxisPositionPercent2 => () => {
     const { duration } = audio
+    const setMusicTo = xAxisPositionPercent2 * duration
+    audio.currentTime = (setMusicTo - (setMusicTo % 100)) / 100
+
+    progressRange.style.display = 'none'
+    progressIsClicked = false
+    audio.addEventListener('timeupdate', updateProgressBar)
+
+    window.onmouseup = false
+}
+
+const handleDraggingProgressBar = event => {
+    if (progressIsClicked) {
+        audio.removeEventListener('timeupdate', updateProgressBar)
+        const progressBar = document.querySelector('[data-js="progress-bar"]')
+        const ProgressContainerRect = progressContainer.getBoundingClientRect()
+
+        const { clientX } = event
+        const { width, left } = ProgressContainerRect
+        
+        const xAxisPositionPercent = ((clientX - left) / width) * 100
+        const notReachedXAxisPositionPercent = (xAxisPositionPercent < 100)
+        
+        if (notReachedXAxisPositionPercent) {
+            progressBar.style.width = `${xAxisPositionPercent}%`
+            window.onmouseup = disableProgressBarDragging(xAxisPositionPercent)
+        }
+    }
+}
+
+const handleProgressBarClick = event => {
     const { offsetWidth } = event.target
+    const { duration } = audio
     const { offsetX } = event
 
     const clickedXPosition = (duration / offsetWidth) * offsetX
-
     audio.currentTime = clickedXPosition
+
     progressIsClicked = true
-    
+    progressRange.style.display = 'block'
 }
+
+const touchBar = event => {
+    console.log('clicoou')
+}
+
+const touchBarMove = () => {
+    console.log('kkkkmk')
+}
+
 
 const updateProgressBar = event => {
     const progressBar = document.querySelector('[data-js="progress-bar"]')
@@ -139,10 +164,13 @@ const updateProgressBar = event => {
 }
 
 controls.addEventListener('click', handleControlButtonsClick)
-progress.addEventListener('mousedown', setProgress)
-progress.addEventListener('mousemove', dragProgress)
+
+progressContainer.addEventListener('mousedown', handleProgressBarClick)
+progressContainer.addEventListener('touchstart', touchBar)
+progressContainer.addEventListener('touchmove', touchBarMove)
+progressRange.addEventListener('mousemove', handleDraggingProgressBar)
+
 
 audio.addEventListener('timeupdate', updateProgressBar)
-
 
 setTrackDetails()
