@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,9 +8,11 @@
   <link rel="stylesheet" href="./src/css/index.css">
   <title>Music Player</title>
 </head>
+
 <body>
-  <div class="music-player-container" data-js="music-player-container">
-    <img class="album-cover" src="./src/assets/images/Daft_Punk_album_cover.jpeg" alt="">
+  <div class="music-player-container">
+    <img class="album-cover" src="./src/assets/images/Daft_Punk_album_cover.jpeg" alt="album-cover"
+      data-js="album-cover">
 
     <h2 class="music-name" data-js="music-name">
       Nome da musica aqui
@@ -22,12 +25,11 @@
       <div class="progress-bar" data-js="progress-bar">
       </div>
     </div>
-    <div class="progress-range" data-js="progress-range"></div>
 
     <div class="controls" data-js="controls">
-      <img src="./src/assets/images/back_icon.png" data-button="back" alt="">
-      <img src="./src/assets/images/play_icon.png" data-button="play" alt="">
-      <img src="./src/assets/images/next_icon.png" data-button="next" alt="">
+      <img src="./src/assets/images/back_icon.png" data-js="button" data-button="back" alt="">
+      <img src="./src/assets/images/play_icon.png" data-js="button" data-button="play" alt="">
+      <img src="./src/assets/images/next_icon.png" data-js="button" data-button="next" alt="">
     </div>
   </div>
 
@@ -35,4 +37,5 @@
 
   <script src="./main.js"></script>
 </body>
+
 </html>

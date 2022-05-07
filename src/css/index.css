@@ -32,9 +32,9 @@ body {
     padding: 1.0rem 0.5rem;
 }
 
-.music-player-container > .album-cover {
+.music-player-container>.album-cover {
     width: 50%;
-    
+
     border-radius: 4px;
     margin-bottom: 1.9rem;
 }
@@ -58,14 +58,14 @@ body {
 
     border-radius: 4px;
     margin-bottom: 1.4rem;
-    
+
     cursor: pointer;
     background-color: rgba(255, 255, 255, 0.116);
 
     transition: all 0.2s ease-out;
 }
 
-.progress-container > .progress-bar {
+.progress-container>.progress-bar {
     position: relative;
 
     width: 0;
@@ -78,8 +78,8 @@ body {
     z-index: -1;
 }
 
-.progress-container > .progress-bar::before {
-   content: '';
+.progress-container>.progress-bar::before {
+    content: '';
     position: absolute;
     top: 50%;
     right: 0;
@@ -93,30 +93,17 @@ body {
     background-color: inherit;
 }
 
-.progress-range {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-
-    width: 100vw;
-    height: 100vh;
-    
-    z-index: 10000;
-    background-color: none;
-}
-
 .progress-container:active {
     height: 0.9rem;
-    border-radius:  6px;
+    border-radius: 6px;
 }
 
-.progress-container:active > .progress-bar {
-    
+.progress-container:active>.progress-bar {
+
     border-radius: 6px 0 0 6px;
 }
 
-.progress-container:active > .progress-bar::before {
+.progress-container:active>.progress-bar::before {
     display: none;
 }
 
@@ -124,15 +111,17 @@ body {
 .controls {
     display: flex;
     gap: 2.7rem;
+
+    user-select: none;
 }
 
-.controls > img {
+.controls>img {
     display: block;
     width: 2.0rem;
-    
+
     transition: all 80ms ease;
 }
 
-.controls > img:active {
+.controls>img:active {
     transform: scale(0.8);
 }

@@ -6,171 +6,203 @@ import PauseIcon from 'assets/images/pause_icon.png'
 const controls = document.querySelector('[data-js="controls"]')
 const audio = document.querySelector('[data-js="audio"]')
 const progressContainer = document.querySelector('[data-js="progress-container"]')
-const progressRange = document.querySelector('[data-js="progress-range"]')
 
 
 let musicData = musics[0]
 let itsPlaying = false
-let progressIsClicked = false
 audio.setAttribute('src', musicData.musicPath)
 
-
+// SET DEFAULT TRACK
 const setTrackDetails = () => {
-    const { musicName, artistName } = musicData
+	const { musicName, artistName } = musicData
 
-    const domMusicNameElement = document.querySelector('[data-js="music-name"]')
-    const domArtistNameElement = document.querySelector('[data-js="artist-name"]')
+	const domMusicNameElement = document.querySelector('[data-js="music-name"]')
+	const domArtistNameElement = document.querySelector('[data-js="artist-name"]')
 
-    domMusicNameElement.textContent = musicName
-    domArtistNameElement.textContent = artistName
+	domMusicNameElement.textContent = musicName
+	domArtistNameElement.textContent = artistName
 }
 
+// CONTROLS SETTINGS
 const switchMusicTrack = track => {
-    musicData = musics[track]
-    audio.setAttribute('data-track', track)
-    audio.setAttribute('src', musicData.musicPath)
+	musicData = musics[track]
+	audio.setAttribute('data-track', track)
+	audio.setAttribute('src', musicData.musicPath)
 
-    setTrackDetails()
+	setTrackDetails()
 }
 
 const playMusic = playButton => {
-    if (playButton) {
-        playButton.setAttribute('src', PauseIcon)
-        playButton.setAttribute('data-button', 'pause')
-    }
+	if (playButton) {
+		playButton.setAttribute('src', PauseIcon)
+		playButton.setAttribute('data-button', 'pause')
+	}
 
-    audio.play()
-    itsPlaying = true
+	audio.play()
+	itsPlaying = true
 }
 
 const pauseMusic = pauseButton => {
-    if (pauseButton) {
-        pauseButton.setAttribute('src', PlayIcon)
-        pauseButton.setAttribute('data-button', 'play')
-    }
+	if (pauseButton) {
+		pauseButton.setAttribute('src', PlayIcon)
+		pauseButton.setAttribute('data-button', 'play')
+	}
 
-    audio.pause()
-    itsPlaying = false
+	audio.pause()
+	itsPlaying = false
 }
 
 const backMusic = () => {
-    const maxTrack = musics.length - 1
-    const currentTrack = Number(audio.getAttribute('data-track'))
-    const backTrack = (currentTrack > 0) ? (currentTrack - 1) : maxTrack
+	const maxTrack = musics.length - 1
+	const currentTrack = Number(audio.getAttribute('data-track'))
+	const backTrack = (currentTrack > 0) ? (currentTrack - 1) : maxTrack
 
-    
-    switchMusicTrack(backTrack)
-    
-    if (itsPlaying) {
-        playMusic()
-        return
-    }
 
-    pauseMusic()
+	switchMusicTrack(backTrack)
+
+	if (itsPlaying) {
+		playMusic()
+		return
+	}
+
+	pauseMusic()
 }
 
 const nextMusic = () => {
-    const maxTrack = musics.length - 1
-    const currentTrack = Number(audio.getAttribute('data-track'))
-    const nextTrack = (currentTrack < maxTrack) ? (currentTrack + 1) : 0
+	const maxTrack = musics.length - 1
+	const currentTrack = Number(audio.getAttribute('data-track'))
+	const nextTrack = (currentTrack < maxTrack) ? (currentTrack + 1) : 0
 
-    
-    switchMusicTrack(nextTrack)
-    
-    if (itsPlaying) {
-        playMusic()
-        return
-    }
 
-    pauseMusic()
+	switchMusicTrack(nextTrack)
+
+	if (itsPlaying) {
+		playMusic()
+		return
+	}
+
+	pauseMusic()
 }
 
 const checkButton = (clickedButton, domElement) => ({
-    play: playMusic,
-    pause: pauseMusic,
-    back: backMusic,
-    next: nextMusic,
+	play: playMusic,
+	pause: pauseMusic,
+	back: backMusic,
+	next: nextMusic,
 })[clickedButton](domElement)
 
 const handleControlButtonsClick = (event) => {
-    const buttons = ['play', 'pause','back', 'next']
+	const buttons = ['play', 'pause', 'back', 'next']
 
-    const domElement = event.target
-    const clickedButton = event.target.dataset.button
-    const allowedButton = buttons.some(button => button === clickedButton)
+	const domElement = event.target
+	const clickedButton = event.target.dataset.button
+	const allowedButton = buttons.some(button => button === clickedButton)
 
-    if (allowedButton) checkButton(clickedButton, domElement)
+	if (allowedButton) checkButton(clickedButton, domElement)
 }
 
-const disableProgressBarDragging = xAxisPositionPercent2 => () => {
-    const { duration } = audio
-    const setMusicTo = xAxisPositionPercent2 * duration
-    audio.currentTime = (setMusicTo - (setMusicTo % 100)) / 100
+// SETIINGS PROGRESS BAR
+const setProgressBarOnEnd = (...dataEvent) => () => {
+	const [moveType, endType, xPositionPercent] = dataEvent
 
-    progressRange.style.display = 'none'
-    progressIsClicked = false
-    audio.addEventListener('timeupdate', updateProgressBar)
+	const { duration } = audio
+	const time = xPositionPercent * duration
 
-    window.onmouseup = false
+	audio.currentTime = (time - (time % 100)) / 100
+	audio.addEventListener('timeupdate', updateProgressBar)
+
+	if (moveType === 'ontouchmove')
+		progressContainer.addEventListener('mousedown', handleProgressBarClick)
+
+	window[moveType] = false
+	window[endType] = false
+	window.onselectstart = false
 }
 
-const handleDraggingProgressBar = event => {
-    if (progressIsClicked) {
-        audio.removeEventListener('timeupdate', updateProgressBar)
-        const progressBar = document.querySelector('[data-js="progress-bar"]')
-        const ProgressContainerRect = progressContainer.getBoundingClientRect()
+const setProgressBarOnMove = moveType => event => {
+	const progressBar = document.querySelector('[data-js="progress-bar"]')
+	const endType = (moveType === 'onmousemove') ? 'onmouseup' : 'ontouchend'
 
-        const { clientX } = event
-        const { width, left } = ProgressContainerRect
-        
-        const xAxisPositionPercent = ((clientX - left) / width) * 100
-        const notReachedXAxisPositionPercent = (xAxisPositionPercent < 100)
-        
-        if (notReachedXAxisPositionPercent) {
-            progressBar.style.width = `${xAxisPositionPercent}%`
-            window.onmouseup = disableProgressBarDragging(xAxisPositionPercent)
-        }
-    }
+	const { width, left } = progressContainer.getBoundingClientRect()
+	const { clientX } = (moveType === 'onmousemove') ? event : event.changedTouches[0]
+	const clickedXPositionPercent = ((clientX - left) / width) * 100
+
+
+	audio.removeEventListener('timeupdate', updateProgressBar)
+
+	if (clickedXPositionPercent < 100) {
+		progressBar.style.width = `${clickedXPositionPercent}%`
+		window[endType] = setProgressBarOnEnd(moveType, endType, clickedXPositionPercent)
+	}
+}
+
+const setProgressBarOnClick = (moveType, clientX) => {
+	const { width, left } = progressContainer.getBoundingClientRect()
+	const { duration } = audio
+
+	const clickedXPosition = (duration / width) * (clientX - left)
+	audio.currentTime = clickedXPosition
+
+	window[moveType] = setProgressBarOnMove(moveType)
+	window.onselectstart = () => false
 }
 
 const handleProgressBarClick = event => {
-    const { offsetWidth } = event.target
-    const { duration } = audio
-    const { offsetX } = event
+	const clickType = event.type
 
-    const clickedXPosition = (duration / offsetWidth) * offsetX
-    audio.currentTime = clickedXPosition
+	if (clickType === 'touchstart') {
+		progressContainer.removeEventListener('mousedown', handleProgressBarClick)
+		const { clientX } = event.changedTouches[0]
+		setProgressBarOnClick('ontouchmove', clientX)
+		return
+	}
 
-    progressIsClicked = true
-    progressRange.style.display = 'block'
+	const { clientX } = event
+	setProgressBarOnClick('onmousemove', clientX)
+
 }
 
-const touchBar = event => {
-    console.log('clicoou')
+// CONTEXT MENU DISABLED FOR MOBILE
+const disableContextMenu = event => {
+	const exceptions = ['progress-container', 'button']
+	const targetElement = event.target.dataset.js
+
+	const itsTouch = event.pointerType === 'touch'
+	const itsException = exceptions.some(exception => exception === targetElement)
+
+	if (itsTouch && itsException) {
+		event.preventDefault()
+		event.stopPropagation()
+		return false
+	}
 }
 
-const touchBarMove = () => {
-    console.log('kkkkmk')
+const disableDrag = event => {
+	event.preventDefault()
 }
 
-
+// PROGRESS BAR LOADING
 const updateProgressBar = event => {
-    const progressBar = document.querySelector('[data-js="progress-bar"]')
-    const { duration, currentTime } = event.target
+	const progressBar = document.querySelector('[data-js="progress-bar"]')
+	const { duration, currentTime } = event.target
 
-    const musicCurrentTimePercent = (currentTime / duration) * 100
+	const musicCurrentTimePercent = (currentTime / duration) * 100
 
-    progressBar.style.width = `${musicCurrentTimePercent}%`
+	progressBar.style.width = `${musicCurrentTimePercent}%`
 }
 
+const switchMusicOnEnd = event => {
+	nextMusic()
+}
+
+// EVENTS
 controls.addEventListener('click', handleControlButtonsClick)
-
 progressContainer.addEventListener('mousedown', handleProgressBarClick)
-progressContainer.addEventListener('touchstart', touchBar)
-progressContainer.addEventListener('touchmove', touchBarMove)
-progressRange.addEventListener('mousemove', handleDraggingProgressBar)
+progressContainer.addEventListener('touchstart', handleProgressBarClick)
 
-
+window.addEventListener('contextmenu', disableContextMenu)
+window.addEventListener('dragstart', disableDrag)
 audio.addEventListener('timeupdate', updateProgressBar)
+audio.addEventListener('ended', switchMusicOnEnd)
 
 setTrackDetails()
