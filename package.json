@@ -6,7 +6,7 @@
   "author": "João Fernandes <joaofergear003@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev:mode": "node ./node_modules/webpack-cli/bin/cli -w --mode development",
+    "dev:mode": "webpack -w --mode development",
     "build": "webpack --mode production"
   },
   "devDependencies": {

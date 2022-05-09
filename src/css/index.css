@@ -10,7 +10,8 @@ html {
 }
 
 body {
-    height: 100vh;
+    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
 
     display: flex;
     flex-direction: column;
@@ -38,8 +39,8 @@ body {
 }
 
 .album-cover-container {
-    width: 50%;
-    
+    width: 30%;
+
     overflow: hidden;
 
     border-radius: 15px;
@@ -51,7 +52,7 @@ body {
 .album-cover-container.active {
     width: var(--width, 30%);
     opacity: var(--opacity, 1);
-    
+
     border-radius: 50%;
     animation: album-cover-rotate 5s linear infinite var(--state, running);
 }
@@ -96,7 +97,7 @@ body {
     height: inherit;
 
     border-radius: 4px 2px 2px 4px;
-    
+
     user-select: none;
     background-color: #fff;
 
@@ -142,7 +143,7 @@ body {
 
     font-weight: 600;
     font-size: 1.5rem;
-    
+
     z-index: -100;
 }
 
@@ -155,7 +156,7 @@ body {
 
     font-weight: 600;
     font-size: 1.5rem;
-    
+
     z-index: -100;
 }
 
@@ -170,8 +171,9 @@ body {
 
 .controls>img {
     display: block;
-    width: 2.0rem;
+    position: relative;
 
+    width: 2.0rem;
     cursor: pointer;
 
     transition: all 80ms ease;

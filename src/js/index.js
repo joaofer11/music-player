@@ -12,7 +12,7 @@ let musicData = musics[0]
 let itsPlaying = false
 audio.setAttribute('src', musicData.musicPath)
 
-// SET DEFAULT TRACK
+// SET TRACK DETAILS
 const setTrackDetails = () => {
 	const { musicName, artistName, albumCover } = musicData
 
@@ -23,13 +23,12 @@ const setTrackDetails = () => {
 	musicNameEl.textContent = musicName
 	musicArtistEl.textContent = artistName
 	albumCoverImgEl.src = albumCover
-	
+
 	audio.preload = 'metadata'
 }
 
 // CONTROLS SETTINGS
 const switchMusicTrack = track => {
-    console.log(audio.preload)
 	musicData = musics[track]
 	audio.setAttribute('data-track', track)
 	audio.setAttribute('src', musicData.musicPath)
@@ -49,8 +48,8 @@ const playMusic = playButton => {
 	albumCoverContainerEl.classList.add('active')
 	style.setProperty('--state', 'running')
 	style.setProperty('--opacity', 0.4)
-	style.setProperty('--width', '40%')
-	
+	style.setProperty('--width', '25%')
+
 	audio.play()
 
 	itsPlaying = true
@@ -64,10 +63,10 @@ const pauseMusic = pauseButton => {
 
 	const { style } = document.documentElement
 	style.setProperty('--state', 'paused')
-    style.setProperty('--opacity', 1)
-    style.setProperty('--width', '50%')
-    
-    audio.pause()
+	style.setProperty('--opacity', 1)
+	style.setProperty('--width', '30%')
+
+	audio.pause()
 	itsPlaying = false
 }
 
@@ -247,6 +246,13 @@ const updateProgressBar = event => {
 	showCurrentTimeAndDuration(duration, currentTime)
 }
 
+// DINAMIC VIEWPORT HEIGHT
+const changeViewHeight = () => {
+	let vh = window.innerHeight * 0.01
+	const { style } = document.documentElement
+	style.setProperty('--vh', `${vh}px`)
+}
+
 // INIT
 const init = () => {
 	controls.addEventListener('click', handleControlButtonsClick)
@@ -255,9 +261,11 @@ const init = () => {
 
 	window.addEventListener('contextmenu', disableContextMenu)
 	window.addEventListener('dragstart', disableDrag)
+	window.addEventListener('resize', changeViewHeight)
 	audio.addEventListener('timeupdate', updateProgressBar)
 	audio.addEventListener('ended', () => nextMusic())
 
+	changeViewHeight()
 	setTrackDetails()
 }
 
