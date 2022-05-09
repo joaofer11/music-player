@@ -16,7 +16,7 @@ module.exports = {
                 }
             },
             {
-                test: /\.mp3$/i,
+                test: /\.(mp3|m4a)$/i,
                 type: 'asset/resource',
                 generator: {
                     filename: 'assets/sounds/[name].[hash][ext][query]'

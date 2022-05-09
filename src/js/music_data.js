@@ -1,21 +1,21 @@
-import GetLucky from 'assets/sounds/Daft_Punk-Get_Lucky.mp3'
-import SomethingAboutUs from 'assets/sounds/Daft_Punk-Something_About_Us.mp3'
-import GeorgioByMoroder from 'assets/sounds/Daft_Punk-Giorgio_by_Moroder.mp3'
+import RidersOnTheStorm from 'assets/sounds/Riders_On_The_Storm.mp3'
+import LoveHerMadly from 'assets/sounds/Love_Her_Madly.mp3'
+import Dogs from 'assets/sounds/Dogs.mp3'
 
 export const musics = [
     {
-        musicPath: GetLucky,
-        musicName: 'Get Lucky',
-        artistName: 'Daft Punk'
+        musicPath: RidersOnTheStorm,
+        musicName: 'Riders On The Storm',
+        artistName: 'The Doors'
     },
     {
-        musicPath: SomethingAboutUs,
-        musicName: 'Something About Us',
-        artistName: 'Daft Punk'
+        musicPath: LoveHerMadly,
+        musicName: 'Love Her Madly',
+        artistName: 'The Doors'
     },
     {
-        musicPath: GeorgioByMoroder,
-        musicName: 'Gergio By Moroder',
-        artistName: 'Daft Punk'
+        musicPath: Dogs,
+        musicName: 'Dogs',
+        artistName: 'Pinky Floyd'
     }
 ]

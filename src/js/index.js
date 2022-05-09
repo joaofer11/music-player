@@ -38,7 +38,13 @@ const playMusic = playButton => {
 		playButton.setAttribute('data-button', 'pause')
 	}
 
+	const { style } = document.documentElement
+	const albumCover = document.querySelector('[data-js="album-cover"]')
+
+	albumCover.classList.add('active')
+	style.setProperty('--state', 'running')
 	audio.play()
+
 	itsPlaying = true
 }
 
@@ -47,6 +53,9 @@ const pauseMusic = pauseButton => {
 		pauseButton.setAttribute('src', PlayIcon)
 		pauseButton.setAttribute('data-button', 'play')
 	}
+
+	const { style } = document.documentElement
+	style.setProperty('--state', 'paused')
 
 	audio.pause()
 	itsPlaying = false
@@ -114,6 +123,8 @@ const setProgressBarOnEnd = (...dataEvent) => () => {
 	if (moveType === 'ontouchmove')
 		progressContainer.addEventListener('mousedown', handleProgressBarClick)
 
+
+	progressContainer.classList.remove('active')
 	window[moveType] = false
 	window[endType] = false
 	window.onselectstart = false
@@ -137,6 +148,7 @@ const setProgressBarOnMove = moveType => event => {
 }
 
 const setProgressBarOnClick = (moveType, clientX) => {
+	const endType = (moveType === 'onmousemove') ? 'onmouseup' : 'ontouchend'
 	const { width, left } = progressContainer.getBoundingClientRect()
 	const { duration } = audio
 
@@ -144,11 +156,17 @@ const setProgressBarOnClick = (moveType, clientX) => {
 	audio.currentTime = clickedXPosition
 
 	window[moveType] = setProgressBarOnMove(moveType)
+	window[endType] = () => {
+		progressContainer.classList.remove('active')
+		window[moveType] = false
+		window[endType] = false
+	}
 	window.onselectstart = () => false
 }
 
 const handleProgressBarClick = event => {
 	const clickType = event.type
+	progressContainer.classList.add('active')
 
 	if (clickType === 'touchstart') {
 		progressContainer.removeEventListener('mousedown', handleProgressBarClick)
@@ -162,7 +180,7 @@ const handleProgressBarClick = event => {
 
 }
 
-// CONTEXT MENU DISABLED FOR MOBILE
+// DISABLED CONTEXT MENU FOR MOBILE
 const disableContextMenu = event => {
 	const exceptions = ['progress-container', 'button']
 	const targetElement = event.target.dataset.js
@@ -177,8 +195,35 @@ const disableContextMenu = event => {
 	}
 }
 
+// DISABLED DRAGGING
 const disableDrag = event => {
 	event.preventDefault()
+	event.stopPropagation()
+	return false
+}
+
+// SHOW MINUTES ON DOM
+const showCurrentTimeAndDuration = (duration, currentTime) => {
+	const musicDurationEl = document.querySelector('[data-js="music-duration"]')
+	const musicCurrentTimeEl = document.querySelector('[data-js="music-current-time"]')
+
+	const durationMinutes = duration / 60
+	const durationSeconds = Math.floor((durationMinutes * 60) % 60)
+
+	const currentTimeSeconds = Math.floor(currentTime % 60)
+	const currentTimeMinutes = Math.floor(currentTime / 60)
+
+	musicCurrentTimeEl.textContent = `${currentTimeMinutes}:${currentTimeSeconds < 10
+		? '0' + currentTimeSeconds
+		: currentTimeSeconds}`
+
+	if (duration) {
+		musicDurationEl.textContent = `
+		${Math.floor(durationMinutes)}:${durationSeconds < 10
+				? '0' + durationSeconds
+				: durationSeconds}`
+	}
+
 }
 
 // PROGRESS BAR LOADING
@@ -187,22 +232,23 @@ const updateProgressBar = event => {
 	const { duration, currentTime } = event.target
 
 	const musicCurrentTimePercent = (currentTime / duration) * 100
-
 	progressBar.style.width = `${musicCurrentTimePercent}%`
+
+	showCurrentTimeAndDuration(duration, currentTime)
 }
 
-const switchMusicOnEnd = event => {
-	nextMusic()
+// INIT
+const init = () => {
+	controls.addEventListener('click', handleControlButtonsClick)
+	progressContainer.addEventListener('mousedown', handleProgressBarClick)
+	progressContainer.addEventListener('touchstart', handleProgressBarClick)
+
+	window.addEventListener('contextmenu', disableContextMenu)
+	window.addEventListener('dragstart', disableDrag)
+	audio.addEventListener('timeupdate', updateProgressBar)
+	audio.addEventListener('ended', () => nextMusic())
+
+	setTrackDetails()
 }
 
-// EVENTS
-controls.addEventListener('click', handleControlButtonsClick)
-progressContainer.addEventListener('mousedown', handleProgressBarClick)
-progressContainer.addEventListener('touchstart', handleProgressBarClick)
-
-window.addEventListener('contextmenu', disableContextMenu)
-window.addEventListener('dragstart', disableDrag)
-audio.addEventListener('timeupdate', updateProgressBar)
-audio.addEventListener('ended', switchMusicOnEnd)
-
-setTrackDetails()
+init()

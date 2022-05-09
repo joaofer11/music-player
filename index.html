@@ -11,8 +11,10 @@
 
 <body>
   <div class="music-player-container">
-    <img class="album-cover" src="./src/assets/images/Daft_Punk_album_cover.jpeg" alt="album-cover"
-      data-js="album-cover">
+
+    <div class="album-cover" data-js="album-cover">
+      <img src="./src/assets/images/Daft_Punk_album_cover.jpeg" alt="album-cover">
+    </div>
 
     <h2 class="music-name" data-js="music-name">
       Nome da musica aqui
@@ -22,8 +24,9 @@
     </h4>
 
     <div class="progress-container" data-js="progress-container">
-      <div class="progress-bar" data-js="progress-bar">
-      </div>
+      <div class="progress-bar" data-js="progress-bar"></div>
+      <div class="music-current-time" data-js="music-current-time">0:00</div>
+      <div class="music-duration" data-js="music-duration"></div>
     </div>
 
     <div class="controls" data-js="controls">
