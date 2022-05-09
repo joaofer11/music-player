@@ -37,9 +37,9 @@ body {
     padding: 1.0rem 0.5rem;
 }
 
-.album-cover {
+.album-cover-container {
     width: 50%;
-
+    
     overflow: hidden;
 
     border-radius: 15px;
@@ -48,14 +48,18 @@ body {
     transition: all 0.3s ease;
 }
 
-.album-cover.active {
+.album-cover-container.active {
+    width: var(--width, 30%);
+    opacity: var(--opacity, 1);
+    
     border-radius: 50%;
-    animation: album-cover-rotate 5s linear infinite var(--state, paused);
+    animation: album-cover-rotate 5s linear infinite var(--state, running);
 }
 
-.album-cover>img {
+.album-cover-container>img {
     display: block;
     max-width: 100%;
+    min-height: 100%;
 }
 
 .music-name {
@@ -79,6 +83,7 @@ body {
     margin-bottom: 3.5rem;
 
     cursor: pointer;
+    user-select: none;
     background-color: rgba(255, 255, 255, 0.116);
 
     transition: all 0.2s ease-out;
@@ -91,7 +96,8 @@ body {
     height: inherit;
 
     border-radius: 4px 2px 2px 4px;
-
+    
+    user-select: none;
     background-color: #fff;
 
     z-index: -1;
@@ -109,6 +115,7 @@ body {
     height: 10px;
 
     border-radius: 50%;
+    user-select: none;
     background-color: inherit;
 }
 
@@ -135,6 +142,8 @@ body {
 
     font-weight: 600;
     font-size: 1.5rem;
+    
+    z-index: -100;
 }
 
 .music-duration {
@@ -146,12 +155,15 @@ body {
 
     font-weight: 600;
     font-size: 1.5rem;
+    
+    z-index: -100;
 }
 
 /* CONTROLS */
 .controls {
+    width: 50%;
     display: flex;
-    gap: 2.7rem;
+    justify-content: space-evenly;
 
     user-select: none;
 }

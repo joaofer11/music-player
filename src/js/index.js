@@ -14,17 +14,22 @@ audio.setAttribute('src', musicData.musicPath)
 
 // SET DEFAULT TRACK
 const setTrackDetails = () => {
-	const { musicName, artistName } = musicData
+	const { musicName, artistName, albumCover } = musicData
 
-	const domMusicNameElement = document.querySelector('[data-js="music-name"]')
-	const domArtistNameElement = document.querySelector('[data-js="artist-name"]')
+	const musicNameEl = document.querySelector('[data-js="music-name"]')
+	const musicArtistEl = document.querySelector('[data-js="artist-name"]')
+	const albumCoverImgEl = document.querySelector('[data-js="album-cover-img"]')
 
-	domMusicNameElement.textContent = musicName
-	domArtistNameElement.textContent = artistName
+	musicNameEl.textContent = musicName
+	musicArtistEl.textContent = artistName
+	albumCoverImgEl.src = albumCover
+	
+	audio.preload = 'metadata'
 }
 
 // CONTROLS SETTINGS
 const switchMusicTrack = track => {
+    console.log(audio.preload)
 	musicData = musics[track]
 	audio.setAttribute('data-track', track)
 	audio.setAttribute('src', musicData.musicPath)
@@ -39,10 +44,13 @@ const playMusic = playButton => {
 	}
 
 	const { style } = document.documentElement
-	const albumCover = document.querySelector('[data-js="album-cover"]')
+	const albumCoverContainerEl = document.querySelector('[data-js="album-cover-container"]')
 
-	albumCover.classList.add('active')
+	albumCoverContainerEl.classList.add('active')
 	style.setProperty('--state', 'running')
+	style.setProperty('--opacity', 0.4)
+	style.setProperty('--width', '40%')
+	
 	audio.play()
 
 	itsPlaying = true
@@ -56,8 +64,10 @@ const pauseMusic = pauseButton => {
 
 	const { style } = document.documentElement
 	style.setProperty('--state', 'paused')
-
-	audio.pause()
+    style.setProperty('--opacity', 1)
+    style.setProperty('--width', '50%')
+    
+    audio.pause()
 	itsPlaying = false
 }
 
