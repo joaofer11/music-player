@@ -63,12 +63,7 @@ const insertTime = (minutes, seconds) => {
 
 // CONTROLS EVENTS
 const checkMusicStatus = () => {
-	if (itsPlaying) {
-		playMusic()
-		return
-	}
-
-	pauseMusic()
+	if (itsPlaying) playMusic()
 }
 
 const switchMusicTrack = track => {
