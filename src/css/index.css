@@ -34,12 +34,14 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-
     padding: 1.0rem 0.5rem;
+
+    width: 100vw;
+    max-width: 480px;
 }
 
 .album-cover-container {
-    width: 30%;
+    width: 80%;
 
     overflow: hidden;
 
@@ -47,6 +49,22 @@ body {
     margin-bottom: 1.9rem;
 
     transition: all 0.3s ease;
+}
+
+.album-cover-container.playing {
+    width: 60%;
+    opacity: 0.5;
+
+    border-radius: 50%;
+    animation: album-cover-rotate 5s linear infinite running;
+}
+
+.album-cover-container.paused {
+    width: 70%;
+    opacity: 1;
+
+    border-radius: 50%;
+    animation: album-cover-rotate 5s linear infinite paused;
 }
 
 .album-cover-container.active {
@@ -72,12 +90,14 @@ body {
     color: #9c9a9b;
     font-size: 1.4rem;
     margin-bottom: 3.4rem;
+
+    z-index: -1;
 }
 
 /* PROGRESS */
 .progress-container {
     position: relative;
-    width: 40%;
+    width: 80%;
     height: 0.3rem;
 
     border-radius: 4px;
@@ -104,7 +124,7 @@ body {
     z-index: -1;
 }
 
-.progress-container>.progress-bar::before {
+.progress-container>.progress-bar::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -120,6 +140,70 @@ body {
     background-color: inherit;
 }
 
+
+.progress-container>.progress-bar>.time-label {
+    visibility: hidden;
+    opacity: 0;
+
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: absolute;
+    right: 0;
+
+    font-size: 2.0rem;
+
+    border-radius: 1px;
+    padding: 0.6rem;
+    transform: translate(50%, -150%);
+
+    user-select: none;
+    background-color: #000;
+
+    z-index: 100;
+
+    transition: all 0.3s ease-in-out;
+}
+
+.progress-container>.progress-bar>.time-label.active {
+    visibility: visible;
+    opacity: 1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    position: absolute;
+    right: 0;
+
+    font-size: 2.0rem;
+
+    border-radius: 1px;
+    padding: 0.6rem;
+    transform: translate(50%, -150%);
+
+    user-select: none;
+    background-color: #000;
+
+    z-index: 100;
+
+}
+
+.progress-container>.progress-bar>.time-label.active::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+
+    transform: translateY(100%);
+
+    border-top: 7px solid rgba(0, 0, 0, 0.8);
+    border-right: 3px solid transparent;
+    border-left: 3px solid transparent;
+
+}
+
 .progress-container.active {
     height: 0.9rem;
     border-radius: 6px;
@@ -129,7 +213,7 @@ body {
     border-radius: 6px 0 0 6px;
 }
 
-.progress-container.active>.progress-bar::before {
+.progress-container.active>.progress-bar::after {
     display: none;
 }
 
@@ -159,6 +243,12 @@ body {
 
     z-index: -100;
 }
+
+.music-current-time.desactive,
+.music-duration.desactive {
+    display: none;
+}
+
 
 /* CONTROLS */
 .controls {
@@ -197,5 +287,50 @@ body {
 @keyframes album-cover-rotate {
     to {
         transform: rotate(360deg);
+    }
+}
+
+/* MEDIAS */
+@media (min-width: 481px) {
+    .music-player-container {
+        max-width: 768px;
+    }
+
+    .album-cover-container {
+        width: 50%;
+    }
+
+    .album-cover-container.playing {
+        width: 45%;
+    }
+
+    .album-cover-container.paused {
+        width: 50%;
+    }
+
+    .progress-container {
+        width: 60%;
+    }
+}
+
+@media (min-width: 769px) {
+    .music-player-container {
+        max-width: 1200px;
+    }
+
+    .album-cover-container {
+        width: 30%;
+    }
+
+    .album-cover-container.playing {
+        width: 25%;
+    }
+
+    .album-cover-container.paused {
+        width: 30%;
+    }
+
+    .progress-container {
+        width: 30%;
     }
 }

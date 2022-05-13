@@ -9,16 +9,33 @@ const progressContainer = document.querySelector('[data-js="progress-container"]
 
 
 let musicData = musics[0]
+let itsDragging = false
 let itsPlaying = false
+let musicTime = 0
 audio.setAttribute('src', musicData.musicPath)
+
+const trackStatus = {
+	currentTime: 0,
+	definedByMovement: false
+}
+
+
+// DOM ELEMETS GETTER
+const getDomElement = (elementName, all) => {
+	const element = all
+		? document.querySelectorAll(elementName)
+		: document.querySelector(elementName)
+
+	return element
+}
 
 // SET TRACK DETAILS
 const setTrackDetails = () => {
 	const { musicName, artistName, albumCover } = musicData
 
-	const musicNameEl = document.querySelector('[data-js="music-name"]')
-	const musicArtistEl = document.querySelector('[data-js="artist-name"]')
-	const albumCoverImgEl = document.querySelector('[data-js="album-cover-img"]')
+	const musicNameEl = getDomElement('[data-js="music-name"]')
+	const musicArtistEl = getDomElement('[data-js="artist-name"]')
+	const albumCoverImgEl = getDomElement('[data-js="album-cover-img"]')
 
 	musicNameEl.textContent = musicName
 	musicArtistEl.textContent = artistName
@@ -27,166 +44,215 @@ const setTrackDetails = () => {
 	audio.preload = 'metadata'
 }
 
-// CONTROLS SETTINGS
+// CURRENT TIME LABEL
+const activeLabel = active => {
+	const timeLabel = getDomElement('[data-js="time-label"]')
+
+	active
+		? timeLabel.classList.add('active')
+		: timeLabel.classList.remove('active')
+
+}
+
+const insertTime = (minutes, seconds) => {
+	if (minutes < 0) return '0:00'
+
+	return `${minutes < 0 ? 0 : minutes}:${(seconds < 10) ? '0' + seconds : seconds}`
+}
+
+
+// CONTROLS EVENTS
+const checkMusicStatus = () => {
+	if (itsPlaying) {
+		playMusic()
+		return
+	}
+
+	pauseMusic()
+}
+
 const switchMusicTrack = track => {
 	musicData = musics[track]
 	audio.setAttribute('data-track', track)
 	audio.setAttribute('src', musicData.musicPath)
 
 	setTrackDetails()
+	checkMusicStatus()
+}
+
+const changeButton = (...buttonData) => {
+	const [buttonEl, icon, alteration] = buttonData
+
+	buttonEl.setAttribute('src', icon)
+	buttonEl.setAttribute('data-button', alteration)
+}
+
+const animateAlbumCover = state => {
+	const albumCoverContainerEl = getDomElement('[data-js="album-cover-container"]')
+
+	switch (state) {
+		case 'playing':
+			albumCoverContainerEl.classList.remove('paused')
+			albumCoverContainerEl.classList.add('playing')
+			break
+		case 'paused':
+			albumCoverContainerEl.classList.remove('playing')
+			albumCoverContainerEl.classList.add('paused')
+	}
 }
 
 const playMusic = playButton => {
-	if (playButton) {
-		playButton.setAttribute('src', PauseIcon)
-		playButton.setAttribute('data-button', 'pause')
-	}
+	if (playButton) changeButton(playButton, PauseIcon, 'pause')
 
 	const { style } = document.documentElement
 	const albumCoverContainerEl = document.querySelector('[data-js="album-cover-container"]')
 
-	albumCoverContainerEl.classList.add('active')
-	style.setProperty('--state', 'running')
-	style.setProperty('--opacity', 0.4)
-	style.setProperty('--width', '25%')
 
 	audio.play()
-
+	animateAlbumCover('playing')
 	itsPlaying = true
 }
 
 const pauseMusic = pauseButton => {
-	if (pauseButton) {
-		pauseButton.setAttribute('src', PlayIcon)
-		pauseButton.setAttribute('data-button', 'play')
-	}
+	if (pauseButton) changeButton(pauseButton, PlayIcon, 'play')
 
-	const { style } = document.documentElement
-	style.setProperty('--state', 'paused')
-	style.setProperty('--opacity', 1)
-	style.setProperty('--width', '30%')
 
 	audio.pause()
+	animateAlbumCover('paused')
 	itsPlaying = false
 }
 
 const backMusic = () => {
 	const maxTrack = musics.length - 1
-	const currentTrack = Number(audio.getAttribute('data-track'))
-	const backTrack = (currentTrack > 0) ? (currentTrack - 1) : maxTrack
-
+	const currentTrack = audio.getAttribute('data-track')
+	const backTrack = (currentTrack > 0) ? (+currentTrack - 1) : maxTrack
 
 	switchMusicTrack(backTrack)
-
-	if (itsPlaying) {
-		playMusic()
-		return
-	}
-
-	pauseMusic()
 }
 
 const nextMusic = () => {
 	const maxTrack = musics.length - 1
-	const currentTrack = Number(audio.getAttribute('data-track'))
-	const nextTrack = (currentTrack < maxTrack) ? (currentTrack + 1) : 0
+	const currentTrack = audio.getAttribute('data-track')
+	const nextTrack = (currentTrack < maxTrack) ? (+currentTrack + 1) : 0
 
 
 	switchMusicTrack(nextTrack)
-
-	if (itsPlaying) {
-		playMusic()
-		return
-	}
-
-	pauseMusic()
 }
 
-const checkButton = (clickedButton, domElement) => ({
+const checkButton = (clickedButton, target) => ({
 	play: playMusic,
 	pause: pauseMusic,
 	back: backMusic,
 	next: nextMusic,
-})[clickedButton](domElement)
+})[clickedButton](target)
 
-const handleControlButtonsClick = (event) => {
+const handleControlButtonsClick = ({ target }) => {
 	const buttons = ['play', 'pause', 'back', 'next']
 
-	const domElement = event.target
-	const clickedButton = event.target.dataset.button
+	const clickedButton = target.dataset.button
 	const allowedButton = buttons.some(button => button === clickedButton)
 
-	if (allowedButton) checkButton(clickedButton, domElement)
+	if (allowedButton) checkButton(clickedButton, target)
 }
 
-// SETIINGS PROGRESS BAR
-const setProgressBarOnEnd = (...dataEvent) => () => {
-	const [moveType, endType, xPositionPercent] = dataEvent
+// PROGRESS BAR EVENTS
+const setSongTime = time => {
+	musicTime = time
 
-	const { duration } = audio
-	const time = xPositionPercent * duration
-
-	audio.currentTime = (time - (time % 100)) / 100
-	audio.addEventListener('timeupdate', updateProgressBar)
-
-	if (moveType === 'ontouchmove')
-		progressContainer.addEventListener('mousedown', handleProgressBarClick)
-
-
-	progressContainer.classList.remove('active')
-	window[moveType] = false
-	window[endType] = false
-	window.onselectstart = false
+	audio.currentTime = musicTime
+	trackStatus.definedByMovement = false
 }
 
-const setProgressBarOnMove = moveType => event => {
-	const progressBar = document.querySelector('[data-js="progress-bar"]')
-	const endType = (moveType === 'onmousemove') ? 'onmouseup' : 'ontouchend'
-
-	const { width, left } = progressContainer.getBoundingClientRect()
-	const { clientX } = (moveType === 'onmousemove') ? event : event.changedTouches[0]
-	const clickedXPositionPercent = ((clientX - left) / width) * 100
-
-
-	audio.removeEventListener('timeupdate', updateProgressBar)
-
-	if (clickedXPositionPercent < 100) {
-		progressBar.style.width = `${clickedXPositionPercent}%`
-		window[endType] = setProgressBarOnEnd(moveType, endType, clickedXPositionPercent)
-	}
+const handleMusicTimeSynchronization = active => {
+	active
+		? audio.addEventListener('timeupdate', updateProgressBar)
+		: audio.removeEventListener('timeupdate', updateProgressBar)
 }
 
-const setProgressBarOnClick = (moveType, clientX) => {
-	const endType = (moveType === 'onmousemove') ? 'onmouseup' : 'ontouchend'
+const activeBarAnimation = active => {
+	active
+		? progressContainer.classList.add('active')
+		: progressContainer.classList.remove('active')
+}
+
+const getXPosition = event => {
+	const itsMouse = event.type.includes('mouse')
+
+	const position = itsMouse ? event.clientX : event.changedTouches[0].clientX
+	return position
+}
+
+const syncMusicTimeOnClick = clickedXPosition => {
 	const { width, left } = progressContainer.getBoundingClientRect()
 	const { duration } = audio
 
-	const clickedXPosition = (duration / width) * (clientX - left)
-	audio.currentTime = clickedXPosition
-
-	window[moveType] = setProgressBarOnMove(moveType)
-	window[endType] = () => {
-		progressContainer.classList.remove('active')
-		window[moveType] = false
-		window[endType] = false
-	}
-	window.onselectstart = () => false
+	return (duration / width) * (clickedXPosition - left)
 }
 
-const handleProgressBarClick = event => {
-	const clickType = event.type
-	progressContainer.classList.add('active')
+const syncMusicTimeOnMovement = movementXPosition => {
+	trackStatus.definedByMovement = true
 
-	if (clickType === 'touchstart') {
-		progressContainer.removeEventListener('mousedown', handleProgressBarClick)
-		const { clientX } = event.changedTouches[0]
-		setProgressBarOnClick('ontouchmove', clientX)
-		return
+	const { width, left } = progressContainer.getBoundingClientRect()
+	return ((movementXPosition - left) / width) * 100
+}
+
+const showCurrentTimeOnLabel = () => {
+	const timeLabel = getDomElement('[data-js="time-label"]')
+
+	const minutes = Math.floor(musicTime / 60)
+	const seconds = Math.floor(musicTime % 60)
+
+	activeLabel(true)
+	timeLabel.textContent = insertTime(minutes, seconds)
+}
+
+const updateMusicTime = percent => {
+	handleMusicTimeSynchronization(false)
+
+	const TimePercent = percent * audio.duration
+	const TimePercentRounding = (TimePercent - (TimePercent % 100)) / 100
+
+	musicTime = TimePercentRounding
+}
+
+const setBar = positionPercent => {
+	const progressBar = getDomElement('[data-js="progress-bar"]')
+
+	if (positionPercent < 100) {
+		progressBar.style.width = `${positionPercent}%`
+		updateMusicTime(positionPercent)
 	}
+}
 
-	const { clientX } = event
-	setProgressBarOnClick('onmousemove', clientX)
+const handleProgressBarOnEnd = event => {
+	itsDragging = false
 
+	if (trackStatus.definedByMovement) setSongTime(musicTime)
+
+	activeLabel(false)
+	activeBarAnimation(false)
+	handleMusicTimeSynchronization(true)
+}
+
+const handleProgressBarOnMovement = event => {
+	if (itsDragging) {
+		const movementXPosition = getXPosition(event)
+		const time = syncMusicTimeOnMovement(movementXPosition)
+
+		setBar(time)
+		showCurrentTimeOnLabel()
+	}
+}
+
+const handleProgressBarOnClick = event => {
+	itsDragging = true
+
+	const clickedXPosition = getXPosition(event)
+	const time = syncMusicTimeOnClick(clickedXPosition)
+
+	activeBarAnimation(true)
+	setSongTime(time)
+	showCurrentTimeOnLabel()
 }
 
 // DISABLED CONTEXT MENU FOR MOBILE
@@ -211,39 +277,43 @@ const disableDrag = event => {
 	return false
 }
 
-// SHOW MINUTES ON DOM
-const showCurrentTimeAndDuration = (duration, currentTime) => {
-	const musicDurationEl = document.querySelector('[data-js="music-duration"]')
-	const musicCurrentTimeEl = document.querySelector('[data-js="music-current-time"]')
+// SHOW DURATION AND CURRENT TIME
+const showSongDuration = ({ duration }) => {
+	const musicDurationEl = getDomElement('[data-js="music-duration"]')
 
-	const durationMinutes = duration / 60
-	const durationSeconds = Math.floor((durationMinutes * 60) % 60)
+	const minutes = Math.floor(duration / 60)
+	const seconds = Math.floor(duration % 60)
 
-	const currentTimeSeconds = Math.floor(currentTime % 60)
-	const currentTimeMinutes = Math.floor(currentTime / 60)
-
-	musicCurrentTimeEl.textContent = `${currentTimeMinutes}:${currentTimeSeconds < 10
-		? '0' + currentTimeSeconds
-		: currentTimeSeconds}`
-
-	if (duration) {
-		musicDurationEl.textContent = `
-		${Math.floor(durationMinutes)}:${durationSeconds < 10
-				? '0' + durationSeconds
-				: durationSeconds}`
-	}
-
+	if (duration)
+		musicDurationEl.textContent = insertTime(minutes, seconds)
 }
 
-// PROGRESS BAR LOADING
+const showSongCurrentTime = ({ currentTime }) => {
+	const musicCurrentTimeEl = getDomElement('[data-js="music-current-time"]')
+
+	const minutes = Math.floor(currentTime / 60)
+	const seconds = Math.floor(currentTime % 60)
+
+	if (currentTime)
+		musicCurrentTimeEl.textContent = insertTime(minutes, seconds)
+}
+
+const getSongCurrentTimePercent = ({ target }) => {
+	const { duration, currentTime } = target
+
+	const timePercent = (currentTime / duration) * 100
+	return timePercent
+}
+
 const updateProgressBar = event => {
-	const progressBar = document.querySelector('[data-js="progress-bar"]')
-	const { duration, currentTime } = event.target
+	const progressBar = getDomElement('[data-js="progress-bar"]')
+	const time = getSongCurrentTimePercent(event)
 
-	const musicCurrentTimePercent = (currentTime / duration) * 100
-	progressBar.style.width = `${musicCurrentTimePercent}%`
 
-	showCurrentTimeAndDuration(duration, currentTime)
+	progressBar.style.width = `${time}%`
+
+	showSongDuration(event.target)
+	showSongCurrentTime(event.target)
 }
 
 // DINAMIC VIEWPORT HEIGHT
@@ -253,20 +323,28 @@ const changeViewHeight = () => {
 	style.setProperty('--vh', `${vh}px`)
 }
 
-// INIT
-const init = () => {
-	controls.addEventListener('click', handleControlButtonsClick)
-	progressContainer.addEventListener('mousedown', handleProgressBarClick)
-	progressContainer.addEventListener('touchstart', handleProgressBarClick)
+// CONTROLS LISTENER
+controls.addEventListener('click', handleControlButtonsClick)
 
-	window.addEventListener('contextmenu', disableContextMenu)
-	window.addEventListener('dragstart', disableDrag)
-	window.addEventListener('resize', changeViewHeight)
-	audio.addEventListener('timeupdate', updateProgressBar)
-	audio.addEventListener('ended', () => nextMusic())
+// PROGRESS BAR LISTENERS
+progressContainer.addEventListener('mousedown', handleProgressBarOnClick)
+progressContainer.addEventListener('touchstart', handleProgressBarOnClick)
 
-	changeViewHeight()
-	setTrackDetails()
-}
+window.addEventListener('mousemove', handleProgressBarOnMovement)
+window.addEventListener('touchmove', handleProgressBarOnMovement)
 
-init()
+window.addEventListener('mouseup', handleProgressBarOnEnd)
+window.addEventListener('touchend', handleProgressBarOnEnd)
+
+// AUDIO LISTENERS
+audio.addEventListener('timeupdate', updateProgressBar)
+audio.addEventListener('ended', () => nextMusic())
+
+// CONFIGS LISTENERS
+window.addEventListener('contextmenu', disableContextMenu)
+window.addEventListener('dragstart', disableDrag)
+window.addEventListener('resize', changeViewHeight)
+
+
+changeViewHeight()
+setTrackDetails()
